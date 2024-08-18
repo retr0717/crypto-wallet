@@ -117,7 +117,7 @@ const Wallet = () => {
               <button
                 type="button"
                 onClick={toggleVisibility}
-                className="absolute inset-y-0 end-px right-1 text-gray-400 cursor-pointer focus:outline-none focus:text-blue-600 dark:text-neutral-600 dark:focus:text-blue-500"
+                className="absolute end-0 inset-y-0 text-gray-400 cursor-pointer focus:outline-none focus:text-blue-600 dark:text-neutral-600 dark:focus:text-blue-500"
               >
                 <svg
                   className="h-5 w-5"
