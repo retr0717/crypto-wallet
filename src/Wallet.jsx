@@ -172,7 +172,13 @@ const Wallet = () => {
         </div>
       )}
       <div className="">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+        <h3
+          className={
+            phrase
+              ? "text-xl font-semibold text-gray-900 dark:text-white"
+              : "hidden"
+          }
+        >
           ACCOUNTS
         </h3>
         {accounts.map((account, index) => (
