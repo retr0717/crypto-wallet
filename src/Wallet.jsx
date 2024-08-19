@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import nacl from "tweetnacl";
 import { generateMnemonic, mnemonicToSeedSync } from "bip39";
 import { derivePath } from "ed25519-hd-key";
@@ -6,23 +6,38 @@ import { Keypair } from "@solana/web3.js";
 import base58 from "bs58";
 import { Buffer } from "buffer";
 import Card from "./Card";
+import { getSolBalance } from "./utils";
 window.Buffer = Buffer;
 
 const Wallet = () => {
   const [phrase, setPhrase] = useState("");
   const [keys, setKeys] = useState({ privateKey: "", publicKey: "" });
   const [accounts, setAccounts] = useState([]);
-  let c = 0;
+  const [c, setC] = useState(1);
   const [visible, setVisible] = useState(false);
+  const [balance, setBalance] = useState(0);
 
   const toggleVisibility = () => {
     setVisible((prevState) => !prevState);
   };
 
+  const handleAccountCreation = () => {
+    const seed = mnemonicToSeedSync(phrase);
+    const path = `m/44'/501'/${c}'/0'`; // This is the derivation path
+    setC(c + 1);
+    const derivedSeed = derivePath(path, seed.toString("hex")).key;
+    const privateKeyBytes = nacl.sign.keyPair.fromSeed(derivedSeed).secretKey;
+    const publicKey =
+      Keypair.fromSecretKey(privateKeyBytes).publicKey.toBase58();
+    const privateKey = base58.encode(privateKeyBytes);
+    const account = { privateKey, publicKey };
+    setAccounts([...accounts, account]);
+  };
+
   const generateKeys = (phrase) => {
     // Replace this with actual key generation logic
     const seed = mnemonicToSeedSync(phrase);
-    const path = `m/44'/501'/${c++}'/0'`; // This is the derivation path
+    const path = `m/44'/501'/0'/0'`; // This is the derivation path
     const derivedSeed = derivePath(path, seed.toString("hex")).key;
     const privateKeyBytes = nacl.sign.keyPair.fromSeed(derivedSeed).secretKey;
     const publicKey =
@@ -36,9 +51,7 @@ const Wallet = () => {
     let generatedPhrase = "";
     generatedPhrase =
       phrase.split(" ").length < 12 ? generateMnemonic() : phrase;
-    console.log(generatedPhrase);
     const generatedKeys = generateKeys(generatedPhrase);
-    console.log(generatedKeys);
 
     setPhrase(generatedPhrase);
     setKeys(generatedKeys);
@@ -49,6 +62,15 @@ const Wallet = () => {
     const newAccount = generateKeys(phrase);
     setAccounts([...accounts, newAccount]);
   };
+
+  const getBalance = async () => {
+    const balance = await getSolBalance(accounts[0].publicKey);
+    setBalance(balance);
+  };
+
+  useEffect(() => {
+    getBalance();
+  }, []);
 
   return (
     <div className="w-full max-w-lg mx-auto">
@@ -100,6 +122,12 @@ const Wallet = () => {
           CURRENT ACCOUNT
         </h3>
         <div className="p-4 overflow-y-hidden bg-white dark:bg-gray-800 rounded-lg shadow">
+          <div className="flex items-center justify-between">
+            <span className="text-xl pb-4  font-bold text-gray-900 dark:text-white">
+              Balance : {balance} SOL
+            </span>
+          </div>
+
           <p>
             <label
               htmlFor="password"
@@ -164,7 +192,7 @@ const Wallet = () => {
       {phrase && keys.privateKey && keys.publicKey && (
         <div className="mb-4">
           <button
-            onClick={handleCreateAccount}
+            onClick={handleAccountCreation}
             className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
           >
             Create New Account

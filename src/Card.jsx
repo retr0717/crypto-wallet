@@ -1,18 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getSolBalance } from "./utils";
 
 // eslint-disable-next-line react/prop-types
 const Card = ({ index, privateKey, publicKey }) => {
   const [visible, setVisible] = useState(false);
+  const [balance, setBalance] = useState(0);
 
   const toggleVisibility = () => {
     setVisible((prevState) => !prevState);
   };
+
+  const getBalance = async () => {
+    const balance = await getSolBalance(publicKey);
+    setBalance(balance);
+  };
+
+  useEffect(() => {
+    getBalance();
+  }, [publicKey]);
 
   return (
     <div className="p-4 my-2 bg-white dark:bg-gray-800 rounded-lg shadow">
       <h3 className="text-sm font-medium pb-4 text-gray-900 dark:text-white">
         ACCOUNT {index}
       </h3>
+      <div className="flex items-center justify-between">
+        <span className="text-xl pb-4  font-bold text-gray-900 dark:text-white">
+          Balance : {balance} SOL
+        </span>
+      </div>
       <p>
         <label
           htmlFor={`password-${index}`}
