@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { getSolBalance } from "./utils";
 
 // eslint-disable-next-line react/prop-types
@@ -17,7 +17,7 @@ const Card = ({ index, privateKey, publicKey }) => {
 
   useEffect(() => {
     getBalance();
-  }, [publicKey]);
+  }, []);
 
   return (
     <div className="p-4 my-2 bg-white dark:bg-gray-800 rounded-lg shadow">

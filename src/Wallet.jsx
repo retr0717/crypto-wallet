@@ -6,7 +6,8 @@ import { Keypair } from "@solana/web3.js";
 import base58 from "bs58";
 import { Buffer } from "buffer";
 import Card from "./Card";
-import { getSolBalance } from "./utils";
+import { getSolBalance, transferSol } from "./utils";
+import Modal from "./Modal";
 window.Buffer = Buffer;
 
 const Wallet = () => {
@@ -18,6 +19,7 @@ const Wallet = () => {
   const [balance, setBalance] = useState(0);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const toggleVisibility = () => {
     setVisible((prevState) => !prevState);
@@ -25,6 +27,31 @@ const Wallet = () => {
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
+  };
+
+  const handleSendButtonClick = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleSendTransaction = async (sender, receiver, amount) => {
+    console.log(`Sending ${amount} SOL from ${sender} to ${receiver}`);
+    try {
+      const result = await transferSol(
+        sender,
+        receiver,
+        selectedAccount.privateKey,
+        amount,
+      );
+      console.log(result);
+    } catch (error) {
+      console.log("error occured", error);
+    }
+    // Close the modal after sending
+    setIsModalVisible(false);
   };
 
   const handleAccountCreation = () => {
@@ -60,6 +87,7 @@ const Wallet = () => {
     setPhrase(generatedPhrase);
     setKeys(generatedKeys);
     setAccounts([generatedKeys]);
+    setC(1);
   };
 
   const fetchBalance = async (publicKey) => {
@@ -86,7 +114,7 @@ const Wallet = () => {
       <form onSubmit={handleCreateWallet} className="space-y-4">
         {/* Wallet Selection and Balance Display */}
         {selectedAccount && (
-          <div className="my-6 border border-slate-100 p-10 rounded-xl">
+          <div className="my-6 border-2 border-blue-300 p-10 rounded-xl">
             <div className="flex justify-center">
               <button
                 id="dropdownDefaultButton"
@@ -119,7 +147,7 @@ const Wallet = () => {
             {dropdownVisible && (
               <div
                 id="dropdown"
-                className="z-10 bg-white divide-y mt-5 divide-gray-100 rounded-lg shadow dark:bg-gray-700 w-full"
+                className="z-10 bg-white transition-all divide-y mt-5 divide-gray-100 rounded-lg shadow dark:bg-gray-700 w-full"
               >
                 <ul
                   className="py-2 text-sm dark:text-gray-200 block w-full p-3"
@@ -146,19 +174,32 @@ const Wallet = () => {
               </div>
             )}
 
-            <div className="flex items-center justify-between mt-4">
-              <span className="text-xl font-bold text-gray-900 dark:text-white">
-                Balance: {balance} SOL
+            <div className="flex items-center justify-between mt-4 w-full border-3 border-blue-600">
+              <span className="text-2xl text-center font-bold text-green-500 dark:text-white w-full p-5">
+                BALANCE : {balance} SOL
               </span>
             </div>
 
             <div className="flex gap-4 mt-4">
-              <button className="w-full bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg text-sm px-4 py-2 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
-                Receive
+              <button
+                type="button"
+                className="w-full text-green-700 hover:text-white border border-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-green-500 dark:text-green-500 dark:hover:text-white dark:hover:bg-green-600 dark:focus:ring-green-800"
+              >
+                RECEIVE
               </button>
-              <button className="w-full bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg text-sm px-4 py-2 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800">
-                Send
+              <button
+                onClick={handleSendButtonClick}
+                type="button"
+                className="w-full text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900"
+              >
+                SEND
               </button>
+              <Modal
+                isVisible={isModalVisible}
+                onClose={handleCloseModal}
+                onSubmit={handleSendTransaction}
+                publicKey={selectedAccount.publicKey}
+              />
             </div>
           </div>
         )}
@@ -181,8 +222,8 @@ const Wallet = () => {
       </form>
 
       <div className="my-6">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Secret Phrase
+        <h3 className="text-xl pb-3 pt-5 font-semibold text-gray-900 dark:text-white">
+          SECRET PHRASE
         </h3>
         <div
           className="w-full p-4 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
@@ -200,8 +241,8 @@ const Wallet = () => {
       </div>
 
       <div className="my-6">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Current Account
+        <h3 className="text-xl pb-3 pt-5 font-semibold text-gray-900 dark:text-white">
+          CURRENT WALLET
         </h3>
         <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow space-y-4">
           <div>
@@ -209,7 +250,7 @@ const Wallet = () => {
               htmlFor="private-key"
               className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
             >
-              Private Key
+              PRIVATE KEY
             </label>
             <div className="relative">
               <input
@@ -253,7 +294,7 @@ const Wallet = () => {
               htmlFor="public-key"
               className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
             >
-              Public Key
+              PUBLIC KEY
             </label>
             <input
               type="text"
@@ -273,7 +314,7 @@ const Wallet = () => {
             onClick={handleAccountCreation}
             className="w-full bg-blue-700 hover:bg-blue-800 text-white font-medium rounded-lg text-sm px-4 py-2 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
           >
-            Create New Account
+            Create New Wallet
           </button>
         </div>
       )}
@@ -286,7 +327,7 @@ const Wallet = () => {
               : "hidden"
           }
         >
-          Accounts
+          WALLETS
         </h3>
         <div className="space-y-4">
           {accounts.map((account, index) => (
