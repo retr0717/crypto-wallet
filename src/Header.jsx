@@ -1,6 +1,6 @@
 const Header = () => {
   return (
-    <header>
+    <header className="flex justify-center">
       <h1>CRYPTO WALLET</h1>
     </header>
   );

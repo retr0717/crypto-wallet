@@ -46,6 +46,22 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
+div {
+  transition: all 1s ease;
+}
+
+.custom-btn {
+  border: 1px solid white;
+  background-color: rgb(55 65 81 / var(--tw-bg-opacity));
+  transition: all 0.3s ease;
+}
+.custom-btn:hover {
+  border: 2px solid white;
+  background-color: rgb(55 65 81 / 0.8);
+  transform: scale(1.02);
+}
+
 button:hover {
   border-color: #646cff;
 }
