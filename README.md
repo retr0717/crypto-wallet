@@ -40,7 +40,7 @@ Follow these steps to set up and run the project locally.
 
 **Clone the repo**
    ```bash
-    git clone https://github.com/your-username/your-repository-name.git
+    git clone https://github.com/retr0717/crypto-wallet.git
     cd your-repository-name
     npm i
     npm run dev
