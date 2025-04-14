@@ -1,8 +1,7 @@
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Modal = ({ isVisible, onClose, onSubmit, publicKey }) => {
-  if (!isVisible) return null;
-
   const [sender, setSender] = useState(publicKey);
   const [receiver, setReceiver] = useState("");
   const [amount, setAmount] = useState(0);
@@ -11,71 +10,166 @@ const Modal = ({ isVisible, onClose, onSubmit, publicKey }) => {
     onSubmit(sender, receiver, amount);
   };
 
+  // Animation variants
+  const backdropVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 }
+  };
+
+  const modalVariants = {
+    hidden: { 
+      opacity: 0,
+      y: 50,
+      scale: 0.9
+    },
+    visible: { 
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 25,
+        delayChildren: 0.2,
+        staggerChildren: 0.1
+      }
+    },
+    exit: {
+      opacity: 0,
+      y: 30,
+      scale: 0.9,
+      transition: { duration: 0.2 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { 
+      y: 0, 
+      opacity: 1,
+      transition: { type: "spring", stiffness: 300, damping: 24 }
+    }
+  };
+
+  const buttonVariants = {
+    hover: { scale: 1.05, transition: { duration: 0.2 } },
+    tap: { scale: 0.95 }
+  };
+
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-slate-500 p-6 rounded-lg shadow-lg w-96">
-        <h2 className="text-xl font-bold mb-4 text-stone-900">SENT SOL</h2>
-        <div>
-          <div className="mb-6">
-            <label htmlFor="success" className="block mb-2 text-sm font-bold">
-              SENDER PUBLIC KEY
-            </label>
-            <input
-              type="text"
-              name="sender"
-              onChange={(e) => setSender(e.target.value)}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="SENDER PUBLIC KEY"
-              defaultValue={publicKey}
-              required
-              readOnly
-            />
-          </div>
-          <div className="mb-6">
-            <label htmlFor="success" className="block mb-2 text-sm font-bold">
-              RECEIVER PUBLIC KEY
-            </label>
-            <input
-              type="text"
-              name="receiver"
-              onChange={(e) => setReceiver(e.target.value)}
-              className="bg-green-50 border text-sm rounded-lg focus:ring-slate-50  block w-full p-2.5 dark:bg-gray-700 dark:border-slate-50"
-              placeholder="RECIPIENT PUBLIC KEY"
-              required
-            />
-          </div>
-          <div className="mb-6">
-            <label htmlFor="success" className="block mb-2 text-sm font-bold">
-              AMOUNT (SOL)
-            </label>
-            <input
-              type="number"
-              name="amount"
-              step="0.01"
-              onChange={(e) => setAmount(e.target.value)}
-              className="bg-green-50 border text-sm rounded-lg focus:ring-slate-50  block w-full p-2.5 dark:bg-gray-700 dark:border-slate-50"
-              placeholder="SOL"
-              required
-            />
-          </div>
-          <div className="flex justify-end">
-            <button
-              onClick={onClose}
-              type="button"
-              className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div 
+          className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50 backdrop-blur-sm"
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+          variants={backdropVariants}
+          onClick={onClose}
+        >
+          <motion.div 
+            className="bg-slate-800 p-8 rounded-xl shadow-2xl w-96 border border-slate-700"
+            variants={modalVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
+          >
+            <motion.h2 
+              className="text-2xl font-bold mb-6 text-white flex items-center"
+              variants={itemVariants}
             >
-              CANCEL
-            </button>
-            <button
-              onClick={formDataSubmit}
-              className="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
-            >
-              SEND
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+              <motion.div
+                initial={{ rotate: -5 }}
+                animate={{ rotate: 0 }}
+                className="bg-gradient-to-r from-purple-500 to-blue-500 w-8 h-8 rounded-full mr-3 flex items-center justify-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                  <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
+                </svg>
+              </motion.div>
+              SEND SOL
+            </motion.h2>
+            
+            <motion.div variants={itemVariants}>
+              <motion.div className="mb-6" variants={itemVariants}>
+                <motion.label className="block mb-2 text-sm font-bold text-gray-300">
+                  SENDER PUBLIC KEY
+                </motion.label>
+                <motion.input
+                  type="text"
+                  name="sender"
+                  onChange={(e) => setSender(e.target.value)}
+                  className="bg-slate-700 border border-slate-600 text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3"
+                  placeholder="SENDER PUBLIC KEY"
+                  defaultValue={publicKey}
+                  required
+                  readOnly
+                  whileFocus={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                />
+              </motion.div>
+              
+              <motion.div className="mb-6" variants={itemVariants}>
+                <motion.label className="block mb-2 text-sm font-bold text-gray-300">
+                  RECEIVER PUBLIC KEY
+                </motion.label>
+                <motion.input
+                  type="text"
+                  name="receiver"
+                  onChange={(e) => setReceiver(e.target.value)}
+                  className="bg-slate-700 border border-slate-600 text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3"
+                  placeholder="RECIPIENT PUBLIC KEY"
+                  required
+                  whileFocus={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                />
+              </motion.div>
+              
+              <motion.div className="mb-8" variants={itemVariants}>
+                <motion.label className="block mb-2 text-sm font-bold text-gray-300">
+                  AMOUNT (SOL)
+                </motion.label>
+                <motion.input
+                  type="number"
+                  name="amount"
+                  step="0.01"
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="bg-slate-700 border border-slate-600 text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3"
+                  placeholder="SOL"
+                  required
+                  whileFocus={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                />
+              </motion.div>
+              
+              <motion.div className="flex justify-end space-x-3" variants={itemVariants}>
+                <motion.button
+                  onClick={onClose}
+                  type="button"
+                  className="focus:outline-none text-white bg-red-700 hover:bg-red-800 font-medium rounded-lg text-sm px-5 py-2.5"
+                  whileHover="hover"
+                  whileTap="tap"
+                  variants={buttonVariants}
+                >
+                  CANCEL
+                </motion.button>
+                <motion.button
+                  onClick={formDataSubmit}
+                  className="focus:outline-none text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2.5"
+                  whileHover="hover"
+                  whileTap="tap"
+                  variants={buttonVariants}
+                >
+                  SEND
+                </motion.button>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 
